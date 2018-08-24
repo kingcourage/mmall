@@ -5,7 +5,7 @@ import com.mmall.common.Const;
 import com.mmall.common.ResponseCode;
 import com.mmall.common.ServerResponse;
 import com.mmall.pojo.User;
-import com.mmall.service.IOrderServcie;
+import com.mmall.service.IOrderService;
 import com.mmall.service.IUserServce;
 import com.mmall.vo.OrderVo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ public class OrderManageController {
     private IUserServce iUserServce;
 
     @Autowired
-    private IOrderServcie iOrderServcie;
+    private IOrderService iOrderServcie;
 
     @RequestMapping("list.do")
     public ServerResponse<PageInfo> orderList(HttpSession session,

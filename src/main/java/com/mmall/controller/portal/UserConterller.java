@@ -25,7 +25,7 @@ public class UserConterller {
     @Autowired
     private IUserServce iUserServce;
 
-    @RequestMapping(value ="login.do", method = RequestMethod.POST)
+    @RequestMapping(value ="login.do", method = RequestMethod.GET)
     public ServerResponse<User> login(String username, String password, HttpSession session){
         ServerResponse<User> response = iUserServce.login(username,password);
         if(response.isSuccess()){
@@ -34,7 +34,7 @@ public class UserConterller {
         return response;
     }
 
-    @RequestMapping(value = "logout.do",method = RequestMethod.POST)
+    @RequestMapping(value = "logout.do",method = RequestMethod.GET)
     public ServerResponse<String> logout(HttpSession session){
         session.removeAttribute(Const.CURRENT_USER);
         return ServerResponse.createBySuccess();
