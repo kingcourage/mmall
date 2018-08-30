@@ -89,7 +89,7 @@ public class UserConterller {
     }
 
 
-    @RequestMapping(value = "forget_reset_password,do",method = RequestMethod.POST)
+    @RequestMapping(value = "forget_reset_password.do",method = RequestMethod.POST)
     public ServerResponse<String> forgetRestPassword(String username,String password,String forgetToken){
         return iUserServce.forgetRestPassword(username,password,forgetToken);
     }
