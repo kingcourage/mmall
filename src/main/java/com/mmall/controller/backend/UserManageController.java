@@ -38,8 +38,6 @@ public class UserManageController {
                 //说明是管理员
                 //session.setAttribute(Const.CURRENT_USER,user);
                 CookieUtil.writeLoginToken(httpServletResponse,session.getId());
-                CookieUtil.readLoginToken(httpServletRequest);
-                CookieUtil.delLoginToken(httpServletRequest,httpServletResponse);
                 RedisPoolUtil.setEx(session.getId(), JsonUtil.obj2String(response.getData()),Const.RedisCacheExtime.REDIS_SESSION_TIME);
                 return response;
             }else{
