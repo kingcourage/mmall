@@ -9,8 +9,8 @@ import redis.clients.jedis.ShardedJedis;
  * 2018/8/30
  */
 @Slf4j
-public class RedisPoolUtil {
-    
+public class RedisShardedPoolUtil {
+
     /**
      *设置key的有效期，单位是秒
      *@author wcy
