@@ -28,6 +28,7 @@ public class RedisShardedPool {
 
 
     private static String redis1Ip = PropertiesUtil.getProperty("redis1.ip");
+    private static String redis1Password = PropertiesUtil.getProperty("redis1.password");
     private static Integer redis1Port = Integer.parseInt(PropertiesUtil.getProperty("redis1.port"));
 
     private static String redis2Ip = PropertiesUtil.getProperty("redis2.ip");
@@ -45,6 +46,7 @@ public class RedisShardedPool {
         config.setBlockWhenExhausted(true);
 
         JedisShardInfo info1 = new JedisShardInfo(redis1Ip,redis1Port,1000*2);
+        info1.setPassword(redis1Password);
         JedisShardInfo info2 = new JedisShardInfo(redis2Ip,redis2Port,1000*2);
         info2.setPassword("123456");
         List<JedisShardInfo> jedisShardInfoList = new ArrayList<>(2);
