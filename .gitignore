@@ -34,3 +34,4 @@ target/
 Thumbs.db
 
 *.iml
+/mymmall.iml
