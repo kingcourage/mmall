@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
  * @author wcy
  * 2018/9/3
  */
-@Component
+//@Component
 @Slf4j
 public class RedissonManager {
 
@@ -31,7 +31,7 @@ public class RedissonManager {
     private static String redis2Ip = PropertiesUtil.getProperty("redis2.ip");
     private static Integer redis2Port = Integer.parseInt(PropertiesUtil.getProperty("redis2.port"));
 
-    @PostConstruct
+    //@PostConstruct
     private void init(){
         try {
             config.useSingleServer().setAddress(new StringBuilder().append(redis1Ip).append(":").append(redis1Port).toString()).setPassword(redis1Password);
