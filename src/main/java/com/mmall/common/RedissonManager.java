@@ -12,7 +12,7 @@ import javax.annotation.PostConstruct;
  * @author wcy
  * 2018/9/3
  */
-//@Component
+@Component
 @Slf4j
 public class RedissonManager {
 
