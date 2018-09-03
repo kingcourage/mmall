@@ -28,14 +28,14 @@ public class UserManageController {
 
     @RequestMapping("login.do")
     public ServerResponse<User> login(String username, String password, HttpSession session, HttpServletResponse httpServletResponse, HttpServletRequest httpServletRequest){
-        username = "admin";
-        password = "123456";
         ServerResponse<User>  response = iUserServce.login(username,password);
         if(response.isSuccess()){
             User user = response.getData();
             if(user.getRole() == Const.Role.ROLE_ADMIN){
                 //说明是管理员
                 //session.setAttribute(Const.CURRENT_USER,user);
+
+                //新增redis共享cookie,session的方式
                 CookieUtil.writeLoginToken(httpServletResponse,session.getId());
                 RedisShardedPoolUtil.setEx(session.getId(), JsonUtil.obj2String(response.getData()),Const.RedisCacheExtime.REDIS_SESSION_TIME);
                 return response;
