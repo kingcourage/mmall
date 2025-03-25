@@ -7,6 +7,7 @@ import com.mmall.dao.UserMapper;
 import com.mmall.pojo.User;
 import com.mmall.service.IUserServce;
 import com.mmall.util.MD5Util;
+import com.mmall.util.PasswordHasher;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,10 +31,27 @@ public class UserServiceImpl implements IUserServce {
             return ServerResponse.createByErrorMessage("用户名不存在");
         }
 
-        String md5Password = MD5Util.MD5EncodeUtf8(password);
-        User user = userMapper.selectLogin(username, md5Password);
+        User user = userMapper.selectByUsername(username);
         if (user == null) {
-            return ServerResponse.createByErrorMessage("密码错误");
+            return ServerResponse.createByErrorMessage("用户名不存在");
+        }
+
+        // Handle legacy MD5 passwords
+        if (PasswordHasher.isLegacyHash(user.getPassword())) {
+            // Verify using old MD5 method
+            String md5Password = MD5Util.MD5EncodeUtf8(password);
+            if (!md5Password.equals(user.getPassword())) {
+                return ServerResponse.createByErrorMessage("密码错误");
+            }
+            // Upgrade to new hash if old password matches
+            String newHash = PasswordHasher.hashPassword(password);
+            user.setPassword(newHash);
+            userMapper.updateByPrimaryKeySelective(user);
+        } else {
+            // Verify using new secure method
+            if (!PasswordHasher.verifyPassword(password, user.getPassword())) {
+                return ServerResponse.createByErrorMessage("密码错误");
+            }
         }
 
         user.setPassword(StringUtils.EMPTY);
@@ -51,8 +69,8 @@ public class UserServiceImpl implements IUserServce {
             return validResponse;
         }
         user.setRole(Const.Role.ROLE_CUSTOMER);
-        //MD5加密
-        user.setPassword(MD5Util.MD5EncodeUtf8(user.getPassword()));
+        // Hash password using secure PBKDF2
+        user.setPassword(PasswordHasher.hashPassword(user.getPassword()));
         int resultCount = userMapper.insert(user);
         if (resultCount == 0) {
             return ServerResponse.createByErrorMessage("注册失败");
@@ -123,8 +141,8 @@ public class UserServiceImpl implements IUserServce {
         }
 
         if(StringUtils.equals(forgetToken,token)){
-            String md5Password = MD5Util.MD5EncodeUtf8(passwordNew);
-            int rowCount = userMapper.updatePasswordByUsername(username,passwordNew);
+            String securePassword = PasswordHasher.hashPassword(passwordNew);
+            int rowCount = userMapper.updatePasswordByUsername(username, securePassword);
 
             if(rowCount >0){
                 return ServerResponse.createBySuccess("修改密码成功");
@@ -138,8 +156,35 @@ public class UserServiceImpl implements IUserServce {
 
     @Override
     public ServerResponse<String> resetPassword(String passwordOld, String passwordNew, User user) {
-        int resultCount = userMapper.checkPassword(MD5Util.MD5EncodeUtf8(passwordOld),user.getId());
-        return null;
+        // Get user's current stored password
+        User currentUser = userMapper.selectByPrimaryKey(user.getId());
+        if (currentUser == null) {
+            return ServerResponse.createByErrorMessage("用户不存在");
+        }
+
+        // Handle verification based on hash type
+        boolean passwordValid;
+        if (PasswordHasher.isLegacyHash(currentUser.getPassword())) {
+            // Legacy MD5 verification
+            String oldMd5Password = MD5Util.MD5EncodeUtf8(passwordOld);
+            passwordValid = oldMd5Password.equals(currentUser.getPassword());
+        } else {
+            // New secure hash verification
+            passwordValid = PasswordHasher.verifyPassword(passwordOld, currentUser.getPassword());
+        }
+
+        if (!passwordValid) {
+            return ServerResponse.createByErrorMessage("旧密码错误");
+        }
+
+        // Update to new secure password hash
+        String newSecurePassword = PasswordHasher.hashPassword(passwordNew);
+        int updateCount = userMapper.updatePasswordByUsername(currentUser.getUsername(), newSecurePassword);
+        
+        if (updateCount > 0) {
+            return ServerResponse.createBySuccessMessage("密码更新成功");
+        }
+        return ServerResponse.createByErrorMessage("密码更新失败");
     }
 
     @Override
